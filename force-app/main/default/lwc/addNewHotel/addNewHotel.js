@@ -5,7 +5,12 @@ import BILLING_ADDRESS_FIELD from "@salesforce/schema/Account.BillingAddress";
 import PICTURE from "@salesforce/schema/Account.Picture__c";
 
 export default class AddNewHotel extends LightningElement {
-  fields = [NAME_FIELD, BILLING_ADDRESS_FIELD, PICTURE];
+  fields = [
+    // NAME_FIELD,
+    { label: "Hotel Name", fieldName: NAME_FIELD.fieldApiName, type: "text" },
+    BILLING_ADDRESS_FIELD,
+    PICTURE
+  ];
   objectApiName = "Account";
 
   handleSuccess(event) {
