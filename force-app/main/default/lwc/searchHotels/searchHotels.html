@@ -2,21 +2,25 @@
   <lightning-card title="Hotel search">
     <lightning-layout multiple-rows="true" vertical-align="end">
       <lightning-layout-item size="4" padding="around-small">
-        <lightning-input-name
+        <lightning-input
           type="text"
           label="Enter Hotel name"
           value={key}
           onchange={updateKey}
-        ></lightning-input-name>
+        ></lightning-input>
       </lightning-layout-item>
-      <lightning-layout-item
-        size="2"
-        padding="around-small"
-      ></lightning-layout-item>
-      <lightning-layout-item
-        size="12"
-        padding="around-small"
-      ></lightning-layout-item>
+      <lightning-layout-item size="2" padding="around-small">
+        <lightning-button label="Search" onclick={handleSearch} variant="brand">
+        </lightning-button>
+      </lightning-layout-item>
+      <lightning-layout-item size="12" padding="around-small">
+        <c-my-custom-type-datatable
+          hide-checkbox-column="true"
+          key-field="id"
+          data={results}
+          columns={cols}
+        ></c-my-custom-type-datatable>
+      </lightning-layout-item>
     </lightning-layout>
   </lightning-card>
 </template>
