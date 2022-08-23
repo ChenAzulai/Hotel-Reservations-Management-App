@@ -1,12 +1,11 @@
 <template>
-  <lightning-map
-    map-markers={mapMarkers}
-    zoom-level={zoomLevel}
-    list-view={listView}
-    show-footer
-  >
-  </lightning-map>
-  <template if:true={error}>
-    <c-error-panel errors={error}></c-error-panel>
+  <template if:true={mapVisible}>
+    <lightning-map
+      zoom-level={zoomLevel}
+      map-markers={mapMarkers}
+      list-view={listView}
+      show-footer
+    >
+    </lightning-map>
   </template>
 </template>
