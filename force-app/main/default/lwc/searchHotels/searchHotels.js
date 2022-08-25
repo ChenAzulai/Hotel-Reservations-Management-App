@@ -11,7 +11,6 @@ export default class SearchHotels extends LightningElement {
   handleSearch() {
     getSearchedHotels({ searchKey: this.key })
       .then((result) => {
-        console.log("result:", result);
         this.results = result;
         this.error = null;
       })

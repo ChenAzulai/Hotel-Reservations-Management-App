@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
-import { LightningElement } from "lwc";
+import { LightningElement, track } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import ROOM_RES_OBJECT from "@salesforce/schema/Room_Reservation__c";
 import CONTACT from "@salesforce/schema/Room_Reservation__c.Contact__c";
 import NUM_OF_ROOMS from "@salesforce/schema/Room_Reservation__c.Number_Of_Rooms__c";
 import RESERVATION_DATE from "@salesforce/schema/Room_Reservation__c.Reservation_Date__c";
@@ -11,8 +12,9 @@ import getRoomDetails from "@salesforce/apex/ReservationController.getRoomDetail
 export default class BookReservation extends LightningElement {
   reservations = [];
   roomDetails = {};
-  fields = [CONTACT, NUM_OF_ROOMS, RESERVATION_DATE, ROOM_TYPE];
-  objectApiName = "Room_Reservation__c";
+
+  fields = [CONTACT, NUM_OF_ROOMS, RESERVATION_DATE, ROOM_TYPE]; //assume that room choosed by type and not by hotel
+  objectApiName = ROOM_RES_OBJECT;
 
   handleSuccess() {
     const toastEvent = new ShowToastEvent({
@@ -39,27 +41,43 @@ export default class BookReservation extends LightningElement {
 
   async handleSubmit(event) {
     event.preventDefault();
-
     const { fields } = event.detail;
-    const { Room_Type__c, Reservation_Date__c: newReservationDate } = fields;
-    console.log("fields:", JSON.stringify(fields));
-    const roomId = { roomId: Room_Type__c };
+    // console.log("fields:", JSON.stringify(fields));
+    const {
+      Room_Type__c,
+      Reservation_Date__c: newReservationDate,
+      Contact__c: newReservationContact,
+      Number_Of_Rooms__c: newReservationNOR
+    } = fields;
 
-    await this.fetchDetails(roomId);
+    try {
+      await this.fetchDetails({ roomId: Room_Type__c });
 
-    this.reservations = this.reservations.filter((res) => {
-      return res.Reservation_Date__c === newReservationDate;
-    });
+      let occupiedRooms = 0;
 
-    const ocupiedRooms = this.reservations[0]?.Number_Of_Rooms__c ?? 0;
+      this.reservations = this.reservations.forEach((res) => {
+        if (res.Reservation_Date__c === newReservationDate) {
+          //check for reservation for the same date
+          occupiedRooms += res.Number_Of_Rooms__c;
+          if (res.Contact__c === newReservationContact) {
+            throw new Error("Contact can't book two rooms on the same date!"); //for each hotel
+          }
+        }
+      });
 
-    const roomLeft =
-      this.roomDetails[0].Number_Of_Available_Rooms__c - ocupiedRooms;
+      // const occupiedRooms = this.reservations[0]?.Number_Of_Rooms__c ?? 0;
 
-    if (!roomLeft) {
-      this.handleSuccess();
-    } else {
-      this.handleError("No rooms available!");
+      const roomLeft =
+        this.roomDetails[0].Number_Of_Available_Rooms__c - occupiedRooms >
+        newReservationNOR;
+
+      if (!roomLeft) {
+        throw new Error("No rooms left!");
+      } else {
+        this.template.querySelector("lightning-record-form").submit(fields);
+      }
+    } catch (error) {
+      this.handleError(error.message);
     }
   }
 }

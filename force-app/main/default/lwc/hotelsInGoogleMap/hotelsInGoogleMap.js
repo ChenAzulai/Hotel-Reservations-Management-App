@@ -12,8 +12,6 @@ export default class HotelsInGoogleMap extends LightningElement {
   @wire(getAccounts)
   wiredAccounts({ error, data }) {
     if (data) {
-      console.log(data);
-      //   JSON.stringify(data);
       data.forEach((hotel) => {
         if (!hotel.BillingAddress) return;
         const marker = {
