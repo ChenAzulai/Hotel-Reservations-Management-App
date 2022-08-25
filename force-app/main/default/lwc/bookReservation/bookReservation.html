@@ -1,10 +1,9 @@
 <template>
-  <lightning-card title="Add a new Hotel" icon-name="standard:account">
+  <lightning-card title="Book reservation" icon-name="action:new_note">
     <lightning-record-form
-      class="contactName"
       object-api-name={objectApiName}
       fields={fields}
-      record-type-id={recordTypeId}
+      onsubmit={handleSubmit}
       onsuccess={handleSuccess}
     >
     </lightning-record-form>

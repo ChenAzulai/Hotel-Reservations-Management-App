@@ -7,7 +7,7 @@ import PICTURE from "@salesforce/schema/Account.Picture__c";
 export default class AddNewHotel extends LightningElement {
   fields = [NAME_FIELD, BILLING_ADDRESS_FIELD, PICTURE];
   objectApiName = "Account";
-
+  recordTypeId = "Hotel";
   handleSuccess(event) {
     const toastEvent = new ShowToastEvent({
       title: "Hotel has been created successfully!",
