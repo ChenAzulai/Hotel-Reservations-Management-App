@@ -16,6 +16,18 @@ public with sharing class ReservationController {
   }
 
   @AuraEnabled(cacheable=true)
+  public static List<Room_Reservation__c> getCostumerReservations(
+    string contact
+  ) {
+    return [
+      SELECT Contact__c, Reservation_Date__c
+      FROM Room_Reservation__c
+      WHERE Contact__c = :contact
+    ];
+    // return result;
+  }
+
+  @AuraEnabled(cacheable=true)
   public static List<Room_Type__c> getRoomDetails(string roomId) {
     // List<Room_Type__c> result = new List<Room_Type__c>();
     return [
