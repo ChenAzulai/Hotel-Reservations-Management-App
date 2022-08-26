@@ -8,10 +8,11 @@ import RESERVATION_DATE from "@salesforce/schema/Room_Reservation__c.Reservation
 import ROOM_TYPE from "@salesforce/schema/Room_Reservation__c.Room_Type__c";
 import getRoomReservations from "@salesforce/apex/ReservationController.getRoomReservations";
 import getRoomDetails from "@salesforce/apex/ReservationController.getRoomDetails";
+import getCostumerReservations from "@salesforce/apex/ReservationController.getCostumerReservations";
 
 export default class BookReservation extends LightningElement {
   reservations = [];
-  roomDetails = {};
+  roomDetails = [];
 
   fields = [CONTACT, NUM_OF_ROOMS, RESERVATION_DATE, ROOM_TYPE]; //assume that room choosed by type and not by hotel
   objectApiName = ROOM_RES_OBJECT;
@@ -39,10 +40,17 @@ export default class BookReservation extends LightningElement {
     this.reservations = await getRoomReservations(roomId);
   }
 
+  async isAlreadyReserved(contactId) {
+    let result = await getCostumerReservations(contactId);
+    result = result.map((res) => res.Reservation_Date__c);
+    return result;
+  }
+
   async handleSubmit(event) {
     event.preventDefault();
+
     const { fields } = event.detail;
-    // console.log("fields:", JSON.stringify(fields));
+    console.log("fields:", JSON.stringify(fields));
     const {
       Room_Type__c,
       Reservation_Date__c: newReservationDate,
@@ -51,6 +59,15 @@ export default class BookReservation extends LightningElement {
     } = fields;
 
     try {
+      const isReserved = await this.isAlreadyReserved({
+        contact: newReservationContact
+      });
+      if (isReserved.includes(newReservationDate)) {
+        throw new Error(
+          "Contact can't book two reservations on the same date!"
+        );
+      }
+
       await this.fetchDetails({ roomId: Room_Type__c });
 
       let occupiedRooms = 0;
@@ -59,22 +76,18 @@ export default class BookReservation extends LightningElement {
         if (res.Reservation_Date__c === newReservationDate) {
           //check for reservation for the same date
           occupiedRooms += res.Number_Of_Rooms__c;
-          if (res.Contact__c === newReservationContact) {
-            throw new Error("Contact can't book two rooms on the same date!"); //for each hotel
-          }
         }
       });
 
-      // const occupiedRooms = this.reservations[0]?.Number_Of_Rooms__c ?? 0;
-
       const roomLeft =
-        this.roomDetails[0].Number_Of_Available_Rooms__c - occupiedRooms >
+        this.roomDetails[0].Number_Of_Available_Rooms__c - occupiedRooms >=
         newReservationNOR;
 
       if (!roomLeft) {
         throw new Error("No rooms left!");
       } else {
-        this.template.querySelector("lightning-record-form").submit(fields);
+        // this.template.querySelector("lightning-record-form").submit(fields);
+        this.handleSuccess();
       }
     } catch (error) {
       this.handleError(error.message);
