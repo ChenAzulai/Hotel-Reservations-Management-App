@@ -50,7 +50,7 @@ export default class BookReservation extends LightningElement {
     event.preventDefault();
 
     const { fields } = event.detail;
-    console.log("fields:", JSON.stringify(fields));
+    // console.log("fields:", JSON.stringify(fields));
     const {
       Room_Type__c,
       Reservation_Date__c: newReservationDate,
